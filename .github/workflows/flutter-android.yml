@@ -15,10 +15,10 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Flutter
+      - name: ⚙️ Setup Flutter (3.35.7 Stable)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'
+          flutter-version: '3.35.7'
           channel: 'stable'
 
       - name: 🧾 Check Flutter & Dart version
@@ -43,3 +43,4 @@ jobs:
         with:
           name: saoirseapp-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
