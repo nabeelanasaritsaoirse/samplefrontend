@@ -32,8 +32,10 @@ jobs:
       - name: 🔍 Lint Check
         run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
 
-      - name: 🧪 Run Tests (machine output)
-        run: flutter test --machine > test_output.json || true
+      - name: 🧪 Run Tests (Machine Readable)
+        run: |
+          flutter test --machine --no-pub > test_output.json || true
+
 
       # ✅ Working Universal Test Reporter (no converter required)
       - name: 📈 Publish Test Results
