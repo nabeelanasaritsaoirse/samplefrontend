@@ -94,17 +94,35 @@ jobs:
           fail-on-error: false
 
 
-      # ------------------------------
-      # Step Summary
-      # ------------------------------
-      - name: 🧾 Add Lint + Test Summary
+      - name: 🧾 Add Lint + Test Summary (Readable)
         if: always()
         run: |
           echo "## 🧩 Flutter CI Summary" >> $GITHUB_STEP_SUMMARY
-
-          echo "### 🔍 Lint Warnings" >> $GITHUB_STEP_SUMMARY
-          flutter analyze --no-fatal-infos --no-fatal-warnings | tail -n 20 >> $GITHUB_STEP_SUMMARY
-
           echo "" >> $GITHUB_STEP_SUMMARY
+
+          # -------------------------
+          # LINT SUMMARY
+          # -------------------------
+          echo "### 🔍 Lint Warnings" >> $GITHUB_STEP_SUMMARY
+          flutter analyze --no-fatal-infos --no-fatal-warnings | sed -n '1,20p' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # -------------------------
+          # TEST SUMMARY (Pretty Format)
+          # -------------------------
           echo "### 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
-          grep "<testcase" test-results.xml | sed 's/<[^>]*>//g' | head -n 20 >> $GITHUB_STEP_SUMMARY
+
+          # Extract number of tests
+          TOTAL=$(grep -o "<testcase" test-results.xml | wc -l)
+          FAILED=$(grep -o "<failure" test-results.xml | wc -l)
+          PASSED=$((TOTAL - FAILED))
+
+          echo "- **Total Tests:** $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Passed:** ✅ $PASSED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failed:** ❌ $FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Show failed test names
+          echo "**Failed Tests:**" >> $GITHUB_STEP_SUMMARY
+          grep -oP '(?<=testcase name=").*?(?=")' test-results.xml | head -n 10 >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
