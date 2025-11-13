@@ -29,20 +29,48 @@ jobs:
       - name: 📦 Install Dependencies
         run: flutter pub get
 
-      - name: 🔍 Analyze Code
-        run: |
-          flutter analyze || echo "⚠️ Lint warnings found, continuing pipeline..."
+      # - name: 🔍 Analyze Code
+      #   run: |
+      #     flutter analyze || echo "⚠️ Lint warnings found, continuing pipeline..."
 
-      - name: 🧪 Run Unit Tests
-        run: flutter test || echo "No tests found"
-        continue-on-error: true
+      # - name: 🧪 Run Unit Tests
+      #   run: flutter test || echo "No tests found"
+      #   continue-on-error: true
 
-      - name: 🏗️ Build Android APK
-        run: flutter build apk --release
-
-      - name: 📤 Upload Build Artifact
-        uses: actions/upload-artifact@v4
+      - name: 🔍 Lint Check
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
+      
+      - name: 🧪 Run Tests
+        run: flutter test --machine > test_output.json || true
+      
+      - name: 📊 Convert Test Output to JUnit XML
+        uses: gabrielittner/junit-report-action@v2
         with:
-          name: saoirseapp-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          input: test_output.json
+          output: test-results.xml
+      
+      - name: 📈 Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: test-results.xml
+      
+      - name: 🧾 Add Lint + Test Summary
+        if: always()
+        run: |
+          echo "## 🧩 Flutter CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Lint Warnings" >> $GITHUB_STEP_SUMMARY
+          flutter analyze | tail -n 10 >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
+          grep "testResults" test_output.json | head -n 10 >> $GITHUB_STEP_SUMMARY
+      
+
+      # - name: 🏗️ Build Android APK
+      #   run: flutter build apk --release
+
+      # - name: 📤 Upload Build Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: saoirseapp-apk
+      #     path: build/app/outputs/flutter-apk/app-release.apk
 
