@@ -43,8 +43,8 @@ jobs:
       - name: 🧪 Run Tests
         run: flutter test --machine > test_output.json || true
       
-      - name: 📊 Convert Test Output to JUnit XML
-        uses: gabrielittner/junit-report-action@v2
+      - name: 📊 Convert Test Output to JUnit XML  
+        uses: EnricoMi/convert-flutter-test@v1   # example converter
         with:
           input: test_output.json
           output: test-results.xml
@@ -53,7 +53,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: test-results.xml
-      
+
       - name: 🧾 Add Lint + Test Summary
         if: always()
         run: |
