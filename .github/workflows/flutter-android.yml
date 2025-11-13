@@ -17,9 +17,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ------------------------------
+      # Checkout
+      # ------------------------------
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
+      # ------------------------------
+      # Setup Flutter
+      # ------------------------------
       - name: ⚙️ Setup Flutter (3.35.7 Stable)
         uses: subosito/flutter-action@v2
         with:
@@ -31,34 +37,56 @@ jobs:
           flutter --version
           dart --version
 
+      # ------------------------------
+      # Install Dependencies
+      # ------------------------------
       - name: 📦 Install Dependencies
         run: flutter pub get
 
+      # ------------------------------
+      # Lint
+      # ------------------------------
       - name: 🔍 Lint Check
         run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
 
-      - name: 🧪 Run Tests (Machine Readable)
+      # ------------------------------
+      # Install formatter to convert test output to JUnit XML
+      # ------------------------------
+      - name: 📦 Install junitreport
+        run: dart pub global activate junitreport
+
+      # ------------------------------
+      # Run Tests (Machine-readable → JUnit XML)
+      # ------------------------------
+      - name: 🧪 Run Tests (JUnit Output)
         run: |
           flutter test --machine --no-pub > test_output.json || true
+          cat test_output.json | tojunit > test-results.xml
+        continue-on-error: true
 
-
-      # ✅ Working Universal Test Reporter (no converter required)
+      # ------------------------------
+      # Publish Tests (GitHub Checks Tab)
+      # ------------------------------
       - name: 📈 Publish Test Results
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: Flutter Test Results
-          path: test_output.json
-          reporter: flutter-json
+          path: test-results.xml
+          reporter: java-junit
           fail-on-error: false
 
+      # ------------------------------
+      # Step Summary
+      # ------------------------------
       - name: 🧾 Add Lint + Test Summary
         if: always()
         run: |
           echo "## 🧩 Flutter CI Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+
           echo "### 🔍 Lint Warnings" >> $GITHUB_STEP_SUMMARY
-          flutter analyze | tail -n 20 >> $GITHUB_STEP_SUMMARY
+          flutter analyze --no-fatal-infos --no-fatal-warnings | tail -n 20 >> $GITHUB_STEP_SUMMARY
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
-          cat test_output.json | head -n 20 >> $GITHUB_STEP_SUMMARY
+          grep "<testcase" test-results.xml | sed 's/<[^>]*>//g' | head -n 20 >> $GITHUB_STEP_SUMMARY
