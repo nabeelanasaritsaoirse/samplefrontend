@@ -1,6 +1,11 @@
 name: 🤖 Flutter Android CI
 run-name: "🚀 Android Build by ${{ github.actor }} on ${{ github.ref_name }}"
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 on:
   push:
     branches: [ main, dev ]
