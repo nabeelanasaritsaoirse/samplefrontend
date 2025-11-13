@@ -31,22 +31,19 @@ jobs:
 
       - name: 🔍 Lint Check
         run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
-      
-      - name: 🧪 Run Flutter Tests (machine output)
+
+      - name: 🧪 Run Tests (machine output)
         run: flutter test --machine > test_output.json || true
 
-      # ✅ Correct working converter (NOT EnricoMi)
-      - name: 📊 Convert Test Output to JUnit XML
-        uses: sangotome/flutter-test-report@v1
-        with:
-          machine: test_output.json
-          output: test-results.xml
-
-      # ✅ Publish JUnit results (creates Test tab in GitHub)
+      # ✅ Working Universal Test Reporter (no converter required)
       - name: 📈 Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: dorny/test-reporter@v1
+        if: always()
         with:
-          files: test-results.xml
+          name: Flutter Test Results
+          path: test_output.json
+          reporter: flutter-json
+          fail-on-error: false
 
       - name: 🧾 Add Lint + Test Summary
         if: always()
@@ -58,12 +55,3 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
           cat test_output.json | head -n 20 >> $GITHUB_STEP_SUMMARY
-
-      # - name: 🏗️ Build Android APK
-      #   run: flutter build apk --release
-
-      # - name: 📤 Upload Build Artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: saoirseapp-apk
-      #     path: build/app/outputs/flutter-apk/app-release.apk
