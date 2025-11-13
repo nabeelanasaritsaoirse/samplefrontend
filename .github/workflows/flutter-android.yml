@@ -29,26 +29,20 @@ jobs:
       - name: 📦 Install Dependencies
         run: flutter pub get
 
-      # - name: 🔍 Analyze Code
-      #   run: |
-      #     flutter analyze || echo "⚠️ Lint warnings found, continuing pipeline..."
-
-      # - name: 🧪 Run Unit Tests
-      #   run: flutter test || echo "No tests found"
-      #   continue-on-error: true
-
       - name: 🔍 Lint Check
         run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
       
-      - name: 🧪 Run Tests
+      - name: 🧪 Run Flutter Tests (machine output)
         run: flutter test --machine > test_output.json || true
-      
-      - name: 📊 Convert Test Output to JUnit XML  
-        uses: EnricoMi/convert-flutter-test@v1   # example converter
+
+      # ✅ Correct working converter (NOT EnricoMi)
+      - name: 📊 Convert Test Output to JUnit XML
+        uses: sangotome/flutter-test-report@v1
         with:
-          input: test_output.json
+          machine: test_output.json
           output: test-results.xml
-      
+
+      # ✅ Publish JUnit results (creates Test tab in GitHub)
       - name: 📈 Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
@@ -58,12 +52,12 @@ jobs:
         if: always()
         run: |
           echo "## 🧩 Flutter CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔍 Lint Warnings" >> $GITHUB_STEP_SUMMARY
-          flutter analyze | tail -n 10 >> $GITHUB_STEP_SUMMARY
+          flutter analyze | tail -n 20 >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
-          grep "testResults" test_output.json | head -n 10 >> $GITHUB_STEP_SUMMARY
-      
+          cat test_output.json | head -n 20 >> $GITHUB_STEP_SUMMARY
 
       # - name: 🏗️ Build Android APK
       #   run: flutter build apk --release
@@ -73,4 +67,3 @@ jobs:
       #   with:
       #     name: saoirseapp-apk
       #     path: build/app/outputs/flutter-apk/app-release.apk
-
