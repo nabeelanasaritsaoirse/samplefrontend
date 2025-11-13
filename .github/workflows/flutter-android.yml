@@ -19,7 +19,7 @@ jobs:
     permissions:
       contents: read
       checks: write
-      pull-requests: writ
+      pull-requests: write
 
     
 
