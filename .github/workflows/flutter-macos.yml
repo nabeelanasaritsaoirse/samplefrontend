@@ -1,0 +1,30 @@
+name: 🍎 Flutter macOS CI
+run-name: "🚀 macOS Build by ${{ github.actor }} on ${{ github.ref_name }}"
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: 📚 Install dependencies
+        run: flutter pub get
+
+      - name: 🧪 Run tests
+        run: flutter test
+
+      - name: 🏗️ Build macOS
+        run: flutter build macos --release
