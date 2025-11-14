@@ -1,0 +1,30 @@
+name: 🪟 Flutter Windows CI
+run-name: "🚀 Windows Build by ${{ github.actor }} on ${{ github.ref_name }}"
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 📦 Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: 📚 Install dependencies
+        run: flutter pub get
+
+      - name: 🧪 Run tests
+        run: flutter test
+
+      - name: 🏗️ Build Windows
+        run: flutter build windows --release
