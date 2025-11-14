@@ -1,0 +1,30 @@
+name: 🌐 Flutter Web CI
+run-name: "🚀 Web Build by ${{ github.actor }} on ${{ github.ref_name }}"
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: 📚 Install dependencies
+        run: flutter pub get
+
+      - name: 🧪 Run tests
+        run: flutter test
+
+      - name: 🏗️ Build Web
+        run: flutter build web --release
